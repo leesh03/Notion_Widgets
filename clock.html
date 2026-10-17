@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pink Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    display:flex; align-items:center; justify-content:center;
+    background:transparent;
+    padding:16px;
+    font-family:'Quicksand', sans-serif;
+  }
+
+  /* ===== 색상: 새벽 (00~06시) ===== */
+  .clock.dawn{
+    --accent:#ffe0ea;
+    --text:#fff0f5;
+    --soft:rgba(255,228,238,.8);
+    --chip:rgba(255,255,255,.18);
+    --day-bg:rgba(255,255,255,.14);
+    --today-bg:#ffb3c9;
+    --today-text:#3d2a5c;
+    --bar-bg:rgba(255,255,255,.22);
+    --border:rgba(255,255,255,.25);
+  }
+  /* ===== 색상: 낮 (06~18시) ===== */
+  .clock.day{
+    --accent:#e0598a;
+    --text:#b4466f;
+    --soft:#c9799a;
+    --chip:rgba(255,255,255,.75);
+    --day-bg:rgba(255,255,255,.45);
+    --today-bg:#e0598a;
+    --today-text:#fff;
+    --bar-bg:rgba(255,255,255,.7);
+    --border:rgba(255,255,255,.75);
+  }
+  /* ===== 색상: 밤 (18~24시) ===== */
+  .clock.night{
+    --accent:#ffd3e3;
+    --text:#ffe6ef;
+    --soft:rgba(255,220,233,.75);
+    --chip:rgba(255,255,255,.16);
+    --day-bg:rgba(255,255,255,.12);
+    --today-bg:#ff8fb6;
+    --today-text:#3a2550;
+    --bar-bg:rgba(255,255,255,.2);
+    --border:rgba(255,255,255,.22);
+  }
+
+  .clock{
+    position:relative; overflow:hidden;
+    width:100%; max-width:520px;
+    padding:26px 30px 24px;
+    border-radius:28px;
+    box-shadow:0 10px 28px rgba(150,60,110,.25), inset 0 0 0 2px var(--border);
+    color:var(--text);
+    transition:color .8s;
+  }
+
+  /* ===== 하늘 배경 (세 장을 겹쳐 놓고 투명도로 전환) ===== */
+  .sky, .deco{ position:absolute; transition:opacity .8s; opacity:0; }
+  .sky{ inset:0; }
+  .sky-dawn { background:linear-gradient(180deg,#2e3168 0%,#7a5a9e 50%,#f0a3b8 82%,#ffd2b8 100%); }
+  .sky-day  { background:linear-gradient(180deg,#86ccff 0%,#c4e8ff 55%,#ffe3ee 100%); }
+  .sky-night{ background:linear-gradient(180deg,#1c1f4a 0%,#4a3a7a 60%,#9c5f92 100%); }
+
+  /* 태양 (낮) */
+  .sun{
+    top:-28px; right:-28px;
+    width:130px; height:130px; border-radius:50%;
+    background:radial-gradient(circle,#fff8d2 0%,#ffe08a 55%,#ffc565 100%);
+    box-shadow:0 0 45px 22px rgba(255,220,130,.6);
+  }
+  /* 구름 (낮) */
+  .cloud{ background:#fff; border-radius:999px; }
+  .cloud::before, .cloud::after{ content:""; position:absolute; background:#fff; border-radius:50%; }
+  .cloud.c1{ width:70px; height:20px; top:72px; right:112px; }
+  .cloud.c1::before{ width:30px; height:30px; top:-14px; left:12px; }
+  .cloud.c1::after{ width:22px; height:22px; top:-9px; left:36px; }
+  .cloud.c2{ width:50px; height:14px; top:30px; left:55%; }
+  .cloud.c2::before{ width:20px; height:20px; top:-10px; left:10px; }
+  .cloud.c2::after{ width:16px; height:16px; top:-6px; left:26px; }
+
+  /* 초승달 (새벽·밤) */
+  .moon{
+    top:18px; right:26px;
+    width:64px; height:64px; border-radius:50%;
+    box-shadow:16px -6px 0 0 #fff2c4;
+    filter:drop-shadow(0 0 10px rgba(255,240,190,.55));
+  }
+  /* 별 (새벽·밤) */
+  .star{ width:3px; height:3px; border-radius:50%; background:#fff; }
+
+  /* 새벽: 아래쪽 지평선 빛 */
+  .glow{
+    left:-10%; right:-10%; bottom:-60px; height:120px;
+    background:radial-gradient(ellipse at center,rgba(255,214,170,.75) 0%,rgba(255,214,170,0) 70%);
+  }
+
+  /* 시간대별로 보이는 요소 */
+  .clock.dawn  .sky-dawn,
+  .clock.dawn  .glow,
+  .clock.dawn  .moon        { opacity:1; }
+  .clock.dawn  .moon        { opacity:.7; }
+  .clock.dawn  .star.top    { opacity:.6; }   /* 새벽엔 위쪽 별만 희미하게 */
+
+  .clock.day   .sky-day,
+  .clock.day   .sun         { opacity:1; }
+  .clock.day   .cloud.c1    { opacity:.9; }
+  .clock.day   .cloud.c2    { opacity:.65; }
+
+  .clock.night .sky-night,
+  .clock.night .moon,
+  .clock.night .star        { opacity:1; }
+  .clock.night .star.dim    { opacity:.6; }
+
+  /* ===== 내용 ===== */
+  .content{ position:relative; z-index:1; }
+
+  .top{ display:flex; justify-content:space-between; align-items:center; }
+  .date{ font-size:17px; font-weight:700; letter-spacing:1px; }
+  .ampm{
+    font-size:clamp(12px,3.6vw,16px); font-weight:700; letter-spacing:1px;
+    padding:3px 10px; border-radius:999px;
+    background:var(--chip); color:var(--accent);
+    margin-left:8px;
+  }
+
+  .time{
+    display:flex; align-items:baseline; justify-content:center;
+    margin:10px 0 16px;
+    font-weight:700; color:var(--accent);
+    transition:color .8s;
+  }
+  .hm{ font-size:clamp(56px,19vw,104px); line-height:1.05; }
+  .colon{ margin:0 2px; }
+  .sec{
+    font-size:clamp(22px,7vw,34px);
+    margin-left:10px; font-weight:500; color:var(--soft);
+    min-width:2ch;
+  }
+
+  .week{ display:flex; gap:6px; }
+  .wday{
+    flex:1; text-align:center;
+    font-size:12px; font-weight:700; letter-spacing:.5px;
+    padding:6px 0; border-radius:12px;
+    color:var(--soft); background:var(--day-bg);
+  }
+  .wday.today{ background:var(--today-bg); color:var(--today-text); }
+
+  .progress{
+    margin-top:14px;
+    display:flex; align-items:center; gap:10px;
+    font-size:12px; font-weight:700; color:var(--soft);
+  }
+  .bar{
+    flex:1; height:6px; border-radius:999px;
+    background:var(--bar-bg); overflow:hidden;
+  }
+  .fill{
+    height:100%; width:0; border-radius:999px;
+    background:linear-gradient(90deg,#ff9fc0,#e0598a);
+    transition:width .5s;
+  }
+</style>
+</head>
+<body>
+
+<div class="clock day" id="clock">
+  <!-- 배경 -->
+  <div class="sky sky-dawn"></div>
+  <div class="sky sky-day"></div>
+  <div class="sky sky-night"></div>
+  <div class="deco glow"></div>
+  <div class="deco sun"></div>
+  <div class="deco cloud c1"></div>
+  <div class="deco cloud c2"></div>
+  <div class="deco moon"></div>
+  <span class="deco star top"     style="top:22px;left:40px"></span>
+  <span class="deco star top dim" style="top:58px;left:120px"></span>
+  <span class="deco star top"     style="top:30px;left:220px"></span>
+  <span class="deco star dim"     style="top:84px;right:150px"></span>
+  <span class="deco star dim"     style="bottom:40px;left:30px"></span>
+  <span class="deco star"         style="bottom:70px;right:40px"></span>
+
+  <!-- 내용 -->
+  <div class="content">
+    <div class="top">
+      <span class="date" id="date">----.--.--</span>
+    </div>
+
+    <div class="time">
+      <span class="hm"><span id="hh">--</span><span class="colon">:</span><span id="mm">--</span></span>
+      <span class="sec" id="ss">--</span>
+      <span class="ampm" id="ampm">AM</span>
+    </div>
+
+    <div class="week" id="week">
+      <span class="wday">MON</span><span class="wday">TUE</span><span class="wday">WED</span>
+      <span class="wday">THU</span><span class="wday">FRI</span><span class="wday">SAT</span><span class="wday">SUN</span>
+    </div>
+
+    <div class="progress">
+      <span>Today</span>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <span id="pct">0%</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== 설정 =====
+  const TZ = "Asia/Seoul";
+  const USE_24H = false;   // true로 바꾸면 24시간 표시 (AM/PM 표시 숨김)
+  const DAY_START = 6;     // 낮 시작 시각 (이 시각 전은 새벽)
+  const NIGHT_START = 18;  // 밤 시작 시각
+  // ================
+
+  const $ = id => document.getElementById(id);
+  const set = (id, v) => { const el = $(id); if (el.textContent !== v) el.textContent = v; };
+  const WD_INDEX = { Mon:0, Tue:1, Wed:2, Thu:3, Fri:4, Sat:5, Sun:6 };
+  const days = document.querySelectorAll("#week .wday");
+  const clock = $("clock");
+  let currentPhase = "";
+
+  if (USE_24H) $("ampm").style.display = "none";
+
+  function tick(){
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: TZ, hour12:false,
+      year:"numeric", month:"2-digit", day:"2-digit",
+      hour:"2-digit", minute:"2-digit", second:"2-digit",
+      weekday:"short"
+    }).formatToParts(new Date());
+    const get = k => (parts.find(p => p.type === k) || {}).value || "";
+
+    let h24 = parseInt(get("hour"), 10); if (h24 === 24) h24 = 0;
+    const mi = get("minute"), ss = get("second");
+    const wi = WD_INDEX[get("weekday")];
+
+    // 시간
+    let hDisp;
+    if (USE_24H) {
+      hDisp = String(h24).padStart(2, "0");
+    } else {
+      let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+      hDisp = String(h12);
+    }
+    set("hh", hDisp);
+    set("mm", mi);
+    set("ss", ss);
+    set("ampm", h24 < 12 ? "AM" : "PM");
+
+    // 시간대별 배경: 00~06 새벽 / 06~18 낮 / 18~24 밤
+    const phase = h24 < DAY_START ? "dawn" : (h24 < NIGHT_START ? "day" : "night");
+    if (phase !== currentPhase) {
+      clock.classList.remove("dawn", "day", "night");
+      clock.classList.add(phase);
+      currentPhase = phase;
+    }
+
+    // 날짜 (2026.10.17)
+    set("date", `${get("year")}.${get("month")}.${get("day")}`);
+
+    // 요일 강조
+    days.forEach((d, i) => d.classList.toggle("today", i === wi));
+
+    // 하루 진행률
+    const secOfDay = h24 * 3600 + parseInt(mi, 10) * 60 + parseInt(ss, 10);
+    const pct = Math.floor(secOfDay / 86400 * 100);
+    $("fill").style.width = pct + "%";
+    set("pct", pct + "%");
+  }
+
+  tick();
+  setTimeout(function loop(){
+    tick();
+    setTimeout(loop, 1000 - (Date.now() % 1000));
+  }, 1000 - (Date.now() % 1000));
+})();
+</script>
+</body>
+</html>
