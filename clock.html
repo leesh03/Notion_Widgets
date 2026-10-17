@@ -19,15 +19,15 @@
 
   /* ===== 색상: 새벽 (00~06시) ===== */
   .clock.dawn{
-    --accent:#ffe0ea;
-    --text:#fff0f5;
-    --soft:rgba(255,228,238,.8);
-    --chip:rgba(255,255,255,.18);
-    --day-bg:rgba(255,255,255,.14);
-    --today-bg:#ffb3c9;
-    --today-text:#3d2a5c;
-    --bar-bg:rgba(255,255,255,.22);
-    --border:rgba(255,255,255,.25);
+    --accent:#ffe3ec;
+    --text:#f2f7ff;
+    --soft:rgba(232,242,255,.82);
+    --chip:rgba(255,255,255,.2);
+    --day-bg:rgba(255,255,255,.16);
+    --today-bg:#ffb0c6;
+    --today-text:#1f3a66;
+    --bar-bg:rgba(255,255,255,.28);
+    --border:rgba(255,255,255,.3);
   }
   /* ===== 색상: 낮 (06~18시) ===== */
   .clock.day{
@@ -67,7 +67,7 @@
   /* ===== 하늘 배경 (세 장을 겹쳐 놓고 투명도로 전환) ===== */
   .sky, .deco{ position:absolute; transition:opacity .8s; opacity:0; }
   .sky{ inset:0; }
-  .sky-dawn { background:linear-gradient(180deg,#2e3168 0%,#7a5a9e 50%,#f0a3b8 82%,#ffd2b8 100%); }
+  .sky-dawn { background:linear-gradient(180deg,#1b3566 0%,#2f5f9a 40%,#7fa9d3 72%,#f3c6b6 92%,#ffd6b0 100%); }
   .sky-day  { background:linear-gradient(180deg,#86ccff 0%,#c4e8ff 55%,#ffe3ee 100%); }
   .sky-night{ background:linear-gradient(180deg,#1c1f4a 0%,#4a3a7a 60%,#9c5f92 100%); }
 
@@ -90,13 +90,22 @@
 
   /* 초승달 (새벽·밤) */
   .moon{
-    top:18px; right:26px;
-    width:64px; height:64px; border-radius:50%;
-    box-shadow:16px -6px 0 0 #fff2c4;
+    top:46px; right:76px;
+    width:84px; height:84px; border-radius:50%;
+    box-shadow:21px -8px 0 0 #fff2c4;
     filter:drop-shadow(0 0 10px rgba(255,240,190,.55));
   }
   /* 별 (새벽·밤) */
   .star{ width:3px; height:3px; border-radius:50%; background:#fff; }
+  .star.tiny{ width:2px; height:2px; box-shadow:0 0 3px rgba(255,255,255,.8); }
+
+  /* 새벽: 떠오르는 해 (아래 가운데, 윗부분만 보임) */
+  .sunrise{
+    left:50%; bottom:-118px; transform:translateX(-50%);
+    width:170px; height:170px; border-radius:50%;
+    background:radial-gradient(circle,#fff3d9 0%,#ffd2a3 55%,#ffad94 100%);
+    box-shadow:0 0 50px 20px rgba(255,200,150,.55);
+  }
 
   /* 새벽: 아래쪽 지평선 빛 */
   .glow{
@@ -107,9 +116,9 @@
   /* 시간대별로 보이는 요소 */
   .clock.dawn  .sky-dawn,
   .clock.dawn  .glow,
-  .clock.dawn  .moon        { opacity:1; }
-  .clock.dawn  .moon        { opacity:.7; }
-  .clock.dawn  .star.top    { opacity:.6; }   /* 새벽엔 위쪽 별만 희미하게 */
+  .clock.dawn  .sunrise     { opacity:1; }
+  .clock.dawn  .moon        { opacity:.55; }  /* 새벽엔 달을 흐리게 */
+  .clock.dawn  .star.tiny   { opacity:.9; }   /* 새벽엔 아주 작은 별 3개만 */
 
   .clock.day   .sky-day,
   .clock.day   .sun         { opacity:1; }
@@ -180,10 +189,14 @@
   <div class="sky sky-day"></div>
   <div class="sky sky-night"></div>
   <div class="deco glow"></div>
+  <div class="deco sunrise"></div>
   <div class="deco sun"></div>
   <div class="deco cloud c1"></div>
   <div class="deco cloud c2"></div>
   <div class="deco moon"></div>
+  <span class="deco star tiny" style="top:26px;left:46%"></span>
+  <span class="deco star tiny" style="top:62px;left:62%"></span>
+  <span class="deco star tiny" style="top:18px;right:40px"></span>
   <span class="deco star top"     style="top:22px;left:40px"></span>
   <span class="deco star top dim" style="top:58px;left:120px"></span>
   <span class="deco star top"     style="top:30px;left:220px"></span>
